@@ -1,0 +1,2 @@
+# Go tooling (gofmt) expects LF line endings on every platform.
+* text=auto eol=lf

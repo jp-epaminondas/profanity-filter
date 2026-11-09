@@ -1,0 +1,22 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+/server
+/bin/
+
+# Moderation state (runtime data, may contain hashed client ids)
+/data/
+
+# Test and profiling output
+*.test
+*.out
+*.prof
+coverage.*
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

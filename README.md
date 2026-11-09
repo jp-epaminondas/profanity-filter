@@ -464,13 +464,13 @@ Diferente de um índice de banco (que responde "esta palavra existe?"), a Trie p
 
 ```mermaid
 flowchart LR
-    A[POST /v1/filter] --> B[Decode JSON<br/>limite 64 KiB]
-    B --> L[Resolve idiomas<br/>→ máscara de bits]
-    L --> C[Normalize<br/>O&#40;n&#41;, 1 passada]
-    C --> D[Varredura na Trie<br/>só em início de palavra<br/>tags & máscara]
-    D --> E[Mapeia matches para<br/>bytes do texto ORIGINAL]
-    E --> F[Censura com *]
-    F --> G[JSON + Server-Timing]
+    A["POST /v1/filter"] --> B["Decode JSON<br/>limite 64 KiB"]
+    B --> L["Resolve idiomas<br/>→ máscara de bits"]
+    L --> C["Normalize<br/>O(n), 1 passada"]
+    C --> D["Varredura na Trie<br/>só em início de palavra<br/>tags AND máscara"]
+    D --> E["Mapeia matches para<br/>bytes do texto ORIGINAL"]
+    E --> F["Censura com *"]
+    F --> G["JSON + Server-Timing"]
 
     subgraph "tempo medido em elapsed_time"
       C

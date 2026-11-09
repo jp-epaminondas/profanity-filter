@@ -1,0 +1,545 @@
+openapi: 3.1.0
+info:
+  title: Language Filter API
+  version: 1.0.0
+  description: |
+    Filtro de palavrões multi-idioma de baixa latência, com foco em português do Brasil.
+    A detecção usa uma Árvore Trie em memória sobre o texto normalizado
+    (caixa baixa, sem acentos, leetspeak convertido, separadores removidos).
+    Todos os idiomas ficam na mesma Trie; cada requisição escolhe quais aplicar.
+servers:
+  - url: http://localhost:8080
+paths:
+  /v1/filter:
+    post:
+      summary: Detecta e censura palavrões em um texto
+      operationId: filterText
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequest'
+            examples:
+              profane:
+                value: { text: "Que p0rr4 de jogo, o VAR é uma m.e.r.d.a!" }
+              clean:
+                value: { text: "O computador está ótimo hoje" }
+              multiLanguage:
+                value: { text: "cu later, that is bullsh1t", languages: ["en"] }
+      responses:
+        '200':
+          description: Texto processado
+          headers:
+            Server-Timing:
+              description: Tempo do algoritmo em milissegundos (ex. `filter;dur=0.0042`)
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilterResponse'
+              examples:
+                profane:
+                  value:
+                    has_profanity: true
+                    censored_text: "Que ***** de jogo, o VAR é uma *********!"
+                    matches:
+                      - { text: p0rr4, word: porra, start: 4, end: 9, languages: [pt-br] }
+                      - { text: m.e.r.d.a, word: merda, start: 31, end: 40, languages: [pt-br] }
+                    languages: ["pt-br"]
+                    detected_languages: ["pt-br"]
+                    elapsed_time: "4.2µs"
+                    elapsed_time_ns: 4200
+        '400':
+          description: JSON inválido, `text` ausente, idioma desconhecido ou `languages` vazio
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              examples:
+                missingText:
+                  value: { error: 'o campo "text" é obrigatório' }
+                unknownLanguage:
+                  value: { error: 'idioma desconhecido "es" (disponíveis: en, pt-br)' }
+        '405':
+          description: Método diferente de POST
+        '413':
+          description: Corpo maior que 64 KiB
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /v1/filter/batch:
+    post:
+      summary: Filtra vários textos em uma chamada (máx. 100)
+      operationId: filterBatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchRequest'
+            example:
+              texts: ["que merda", "comprei um peru", "what the fuck"]
+              languages: ["pt-br", "en"]
+      responses:
+        '200':
+          description: Resultados na mesma ordem dos textos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchResponse'
+        '400':
+          description: "`texts` ausente, vazio, com mais de 100 itens, item maior que 64 KiB ou idioma desconhecido"
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '413':
+          description: Corpo maior que 1 MiB
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /v1/reports:
+    post:
+      summary: Reclama que uma palavra censurada não é palavrão
+      description: |
+        A reclamação entra numa fila para o admin avaliar; nada muda até lá.
+        Cada cliente (IP) conta uma vez por palavra.
+      operationId: reportWord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+            example: { word: puto, language: pt-br, reason: "em PT-PT puto = menino" }
+      responses:
+        '202':
+          description: Reclamação registrada (ou já registrada por este cliente, com counted=false)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Report'
+                  - type: object
+                    properties:
+                      counted: { type: boolean }
+        '400':
+          description: Campos ausentes ou idioma desconhecido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Palavra não está no dicionário do idioma
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: Palavra já está em quarentena ou removida
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /v1/admin/reports:
+    get:
+      summary: Fila de reclamações, as mais reclamadas primeiro
+      operationId: adminListReports
+      security: [{ adminToken: [] }]
+      responses:
+        '200':
+          description: Reclamações
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items: { $ref: '#/components/schemas/Report' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/AdminDisabled' }
+  /v1/admin/words:
+    get:
+      summary: Lista as palavras dos dicionários, com origem e status
+      operationId: adminListWords
+      security: [{ adminToken: [] }]
+      parameters:
+        - { name: language, in: query, schema: { type: string, example: pt-br } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/Status' } }
+        - name: source
+          in: query
+          description: Nome do arquivo (ex. pt-br.txt) ou "api"
+          schema: { type: string }
+        - name: q
+          in: query
+          description: Trecho da palavra (normalizado, então "f0d" encontra "foda")
+          schema: { type: string }
+      responses:
+        '200':
+          description: Palavras, ordenadas por idioma e palavra
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  words:
+                    type: array
+                    items: { $ref: '#/components/schemas/Entry' }
+        '400':
+          description: Idioma ou status inválido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/AdminDisabled' }
+    post:
+      summary: Cadastra palavrões novos (até 100 por chamada)
+      description: |
+        Cada palavra é avaliada individualmente; as recusadas aparecem em
+        `skipped` com o motivo. Aplicado imediatamente e salvo no estado.
+      operationId: adminAddWords
+      security: [{ adminToken: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [language, words]
+              properties:
+                language: { type: string, example: pt-br }
+                words:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items: { type: string, maxLength: 64 }
+            example: { language: pt-br, words: ["mané", "otário"] }
+      responses:
+        '201':
+          description: Ao menos uma palavra cadastrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AddResult' }
+        '200':
+          description: Nenhuma palavra nova (todas em skipped)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AddResult' }
+        '400':
+          description: Idioma desconhecido, campos ausentes ou mais de 100 palavras
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/AdminDisabled' }
+  /v1/admin/words/{language}/{word}/quarantine:
+    parameters:
+      - $ref: '#/components/parameters/Language'
+      - $ref: '#/components/parameters/Word'
+    post:
+      summary: Suspende a palavra (deixa de censurar; reversível)
+      operationId: adminQuarantineWord
+      security: [{ adminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/WordState' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/AdminDisabled' }
+        '404': { $ref: '#/components/responses/WordNotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/admin/words/{language}/{word}/restore:
+    parameters:
+      - $ref: '#/components/parameters/Language'
+      - $ref: '#/components/parameters/Word'
+    post:
+      summary: Reativa a palavra e encerra suas reclamações
+      operationId: adminRestoreWord
+      security: [{ adminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/WordState' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/AdminDisabled' }
+        '404': { $ref: '#/components/responses/WordNotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/admin/words/{language}/{word}:
+    parameters:
+      - $ref: '#/components/parameters/Language'
+      - $ref: '#/components/parameters/Word'
+    delete:
+      summary: Remove a palavra de vez
+      operationId: adminRemoveWord
+      security: [{ adminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/WordState' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/AdminDisabled' }
+        '404': { $ref: '#/components/responses/WordNotFound' }
+  /v1/languages:
+    get:
+      summary: Lista os idiomas carregados e o padrão do servidor
+      operationId: listLanguages
+      responses:
+        '200':
+          description: Idiomas disponíveis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Languages'
+              example:
+                languages:
+                  - { code: en, words: 94, opt_in: false }
+                  - { code: pt-br, words: 180, opt_in: false }
+                  - { code: pt-br-strict, words: 107, opt_in: true }
+                default: [en, pt-br]
+  /:
+    get:
+      summary: Playground (página HTML para testar o filtro no navegador)
+      operationId: playground
+      responses:
+        '200':
+          description: Página HTML, servida com Content-Security-Policy estrita
+          content:
+            text/html: {}
+  /health:
+    get:
+      summary: Verificação de saúde e estatísticas da Trie
+      operationId: health
+      responses:
+        '200':
+          description: Servidor pronto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example: { status: ok, languages: [en, pt-br, pt-br-strict], words: 381, trie_nodes: 1206 }
+components:
+  securitySchemes:
+    adminToken:
+      type: http
+      scheme: bearer
+      description: Valor da variável de ambiente ADMIN_TOKEN.
+  parameters:
+    Language:
+      name: language
+      in: path
+      required: true
+      schema: { type: string, example: pt-br }
+    Word:
+      name: word
+      in: path
+      required: true
+      description: Palavra (normalizada no servidor; "V4CA" equivale a "vaca").
+      schema: { type: string, example: vaca }
+  responses:
+    WordState:
+      description: Novo estado da palavra
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/WordState' }
+    Unauthorized:
+      description: Token ausente ou inválido
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    AdminDisabled:
+      description: ADMIN_TOKEN não configurado no servidor
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    WordNotFound:
+      description: Palavra não está no dicionário do idioma
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Transição inválida (ex. pôr em quarentena uma palavra removida)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    BatchRequest:
+      type: object
+      required: [texts]
+      properties:
+        texts:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { type: string, maxLength: 65536 }
+        languages:
+          type: array
+          minItems: 1
+          items: { type: string }
+        mask: { $ref: '#/components/schemas/MaskMode' }
+        mask_char: { $ref: '#/components/schemas/MaskChar' }
+    BatchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              has_profanity: { type: boolean }
+              censored_text: { type: string }
+              matches:
+                type: array
+                items: { $ref: '#/components/schemas/Match' }
+              detected_languages:
+                type: array
+                items: { type: string }
+        count: { type: integer }
+        profane_count: { type: integer }
+        languages:
+          type: array
+          items: { type: string }
+        elapsed_time: { type: string }
+        elapsed_time_ns: { type: integer, format: int64 }
+    ReportRequest:
+      type: object
+      required: [word, language]
+      properties:
+        word: { type: string }
+        language: { type: string }
+        reason: { type: string, maxLength: 280 }
+    Report:
+      type: object
+      properties:
+        language: { type: string }
+        word: { type: string }
+        status: { $ref: '#/components/schemas/Status' }
+        reports: { type: integer, description: Clientes distintos que reclamaram }
+        reasons:
+          type: array
+          items: { type: string }
+        first_reported_at: { type: string, format: date-time }
+        last_reported_at: { type: string, format: date-time }
+    WordState:
+      type: object
+      properties:
+        language: { type: string }
+        word: { type: string }
+        status: { $ref: '#/components/schemas/Status' }
+        updated_at: { type: string, format: date-time }
+    Status:
+      type: string
+      enum: [active, quarantined, removed]
+    MaskMode:
+      type: string
+      enum: [full, first]
+      default: full
+      description: '"full" troca todas as letras ("*****"); "first" mantém a primeira de cada palavra ("p****").'
+    MaskChar:
+      type: string
+      minLength: 1
+      maxLength: 1
+      default: '*'
+      description: Um caractere visível (qualquer Unicode, ex. "#" ou "█").
+    Match:
+      type: object
+      properties:
+        text: { type: string, description: Como foi escrito no texto, ex. "p0rr4" }
+        word: { type: string, description: 'Forma no dicionário (normalizada), ex. "porra"' }
+        start: { type: integer, description: Posição inicial em caracteres (code points), válida no texto original e no censurado }
+        end: { type: integer, description: Posição final (exclusiva), em caracteres }
+        languages:
+          type: array
+          items: { type: string }
+    Entry:
+      type: object
+      properties:
+        language: { type: string }
+        word: { type: string, description: Como está escrita na origem }
+        normalized: { type: string, description: Forma usada pela Trie }
+        source: { type: string, description: 'Arquivo de origem (ex. pt-br.txt) ou "api"' }
+        status: { $ref: '#/components/schemas/Status' }
+        reports: { type: integer }
+        added_at: { type: string, format: date-time, description: Só para source=api }
+        updated_at: { type: string, format: date-time, description: Última decisão do admin }
+    AddResult:
+      type: object
+      properties:
+        added:
+          type: array
+          items: { $ref: '#/components/schemas/Entry' }
+        skipped:
+          type: array
+          items:
+            type: object
+            properties:
+              word: { type: string }
+              reason: { type: string }
+    FilterRequest:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          description: Texto a ser analisado (UTF-8).
+        languages:
+          type: array
+          minItems: 1
+          items: { type: string, example: pt-br }
+          description: |
+            Idiomas a aplicar (sem diferenciar maiúsculas), incluindo dicionários
+            opcionais como `pt-br-strict`. Se omitido, vale o padrão do servidor
+            (`DEFAULT_LANGUAGES`). Veja `GET /v1/languages`.
+        mask: { $ref: '#/components/schemas/MaskMode' }
+        mask_char: { $ref: '#/components/schemas/MaskChar' }
+    FilterResponse:
+      type: object
+      required: [has_profanity, censored_text, languages, detected_languages, elapsed_time, elapsed_time_ns]
+      properties:
+        has_profanity:
+          type: boolean
+          description: Indica se algum palavrão foi detectado.
+        censored_text:
+          type: string
+          description: |
+            Texto original com cada palavra detectada mascarada (um caractere
+            de máscara por caractere; espaços dentro de expressões são mantidos).
+        matches:
+          type: array
+          items: { $ref: '#/components/schemas/Match' }
+        languages:
+          type: array
+          items: { type: string }
+          description: Idiomas aplicados nesta requisição.
+        detected_languages:
+          type: array
+          items: { type: string }
+          description: Idiomas em que algum palavrão foi encontrado.
+        elapsed_time:
+          type: string
+          description: Tempo do algoritmo (normalização + busca + censura), legível.
+        elapsed_time_ns:
+          type: integer
+          format: int64
+          description: O mesmo tempo, em nanossegundos.
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+    Languages:
+      type: object
+      properties:
+        languages:
+          type: array
+          items:
+            type: object
+            properties:
+              code: { type: string }
+              words: { type: integer }
+              opt_in:
+                type: boolean
+                description: Dicionário opcional (sufixo -strict), fora do padrão do servidor.
+        default:
+          type: array
+          items: { type: string }
+    Health:
+      type: object
+      properties:
+        status: { type: string }
+        languages:
+          type: array
+          items: { type: string }
+        words: { type: integer }
+        trie_nodes: { type: integer }

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Filtro de palavrões</title>
+  <meta name="description" content="Digite um texto e veja o filtro censurar palavrões em microssegundos.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='12' width='26' height='9' rx='1.5' fill='%23C8102E'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <h1>Filtro de palavrões</h1>
+      <p class="lede">
+        Escreva qualquer coisa. Cada tecla vai até o servidor, passa pela Trie e volta censurada,
+        com o tempo que o algoritmo levou.
+      </p>
+    </header>
+
+    <section class="editor" aria-labelledby="editor-label">
+      <div class="editor-head">
+        <label id="editor-label" for="input">Seu texto</label>
+        <div class="examples" role="group" aria-label="Exemplos">
+          <span class="examples-hint">Experimente:</span>
+          <button type="button" data-example="Que p0rr4 de jogo, o juiz é um d3sgr4çad0!">Leetspeak</button>
+          <button type="button" data-example="Que m.e.r.d.a, fiquei porrrrraaa">Pontos e letras repetidas</button>
+          <button type="button" data-example="O computador da Ação Social está ótimo">Palavra inocente</button>
+          <button type="button" data-example="cu later, that is bullsh1t" data-languages="en,pt-br">Dois idiomas</button>
+        </div>
+      </div>
+      <textarea id="input" rows="4" spellcheck="false" maxlength="10000"
+        placeholder="Digite um texto, ou escolha um exemplo acima">Que p0rr4 de jogo, o juiz é um d3sgr4çad0!</textarea>
+
+      <div class="options">
+        <fieldset>
+          <legend>Idiomas</legend>
+          <div id="languages" class="chips"><span class="muted">carregando…</span></div>
+        </fieldset>
+        <fieldset>
+          <legend>Censura</legend>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="mask" value="full" checked> <span>*****</span></label>
+            <label class="chip"><input type="radio" name="mask" value="first"> <span>p****</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend><label for="mask-char">Caractere</label></legend>
+          <input id="mask-char" class="char-input" type="text" value="*" maxlength="2" aria-describedby="char-help">
+          <span id="char-help" class="visually-hidden">Um caractere que substitui cada letra censurada</span>
+        </fieldset>
+      </div>
+    </section>
+
+    <section class="result" aria-labelledby="result-label">
+      <div class="result-head">
+        <h2 id="result-label">Resultado</h2>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </div>
+      <p id="output" class="output"></p>
+      <p id="error" class="error" role="alert" hidden></p>
+
+      <table id="matches" class="matches" hidden>
+        <caption class="visually-hidden">Palavras encontradas</caption>
+        <thead>
+          <tr><th scope="col">Como foi escrito</th><th scope="col">Corresponde a</th><th scope="col">Idioma</th><th scope="col">Posição</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section class="timing" aria-labelledby="timing-label">
+      <h2 id="timing-label">Quanto tempo levou</h2>
+      <p class="timing-numbers">
+        <span class="figure figure-algo"><strong id="t-algo">–</strong> no algoritmo</span>
+        <span class="figure figure-rtt"><strong id="t-rtt">–</strong> ida e volta pelo navegador</span>
+      </p>
+
+      <div class="ruler" aria-hidden="true">
+        <div class="ruler-track">
+          <span class="ref ref-ram" data-label="acesso à RAM" data-value="100 ns"></span>
+          <span class="ref ref-ssd" data-label="leitura em SSD" data-value="150 µs"></span>
+          <span class="ref ref-dc" data-label="ida e volta no datacenter" data-value="500 µs"></span>
+          <span class="ref ref-blink" data-label="piscar de olhos" data-value="100 ms"></span>
+          <span class="tick tick-ns">1 ns</span>
+          <span class="tick tick-us">1 µs</span>
+          <span class="tick tick-ms">1 ms</span>
+          <span class="tick tick-s">1 s</span>
+          <span id="m-rtt" class="marker marker-rtt" hidden></span>
+          <span id="m-algo" class="marker marker-algo" hidden></span>
+        </div>
+      </div>
+      <p class="footnote">
+        Escala logarítmica: cada marca é mil vezes a anterior. As referências são ordens de grandeza
+        aproximadas. A diferença entre os dois tempos é a rede e o navegador; o filtro em si é a parte vermelha.
+      </p>
+    </section>
+
+    <details class="raw">
+      <summary>Resposta da API</summary>
+      <p class="raw-request"><code>POST /v1/filter</code></p>
+      <pre><code id="raw"></code></pre>
+    </details>
+
+    <footer class="colophon">
+      <p>
+        Escrito em Go, sem dependências. A API e a documentação estão no repositório:
+        <code>POST /v1/filter</code>, <code>POST /v1/filter/batch</code>, <code>GET /v1/languages</code>.
+      </p>
+    </footer>
+  </main>
+</body>
+</html>

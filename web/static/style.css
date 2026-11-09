@@ -1,0 +1,482 @@
+/* Playground do filtro de palavrões.
+   Papel, tinta e uma tarja vermelha de censura: o vermelho aparece apenas
+   onde o filtro agiu (palavras censuradas e o tempo do algoritmo). */
+
+:root {
+  --paper: #F3F4F1;
+  --ink: #1C1F26;
+  --graphite: #5B616E;
+  --rule: #D5D8DC;
+  --field: #FFFFFF;
+  --censor: #C8102E;
+  --censor-ink: #FFFFFF;
+  --clean: #2F7D5B;
+
+  --display: "Bahnschrift", "DIN Alternate", "DIN Next", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --text: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --code: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+
+  --step--1: 0.875rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.75rem;
+  --step-3: 2.75rem;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #16181D;
+    --ink: #E6E7E3;
+    --graphite: #9AA0AB;
+    --rule: #33373F;
+    --field: #1E2127;
+    --censor: #E5484D;
+    --censor-ink: #16181D;
+    --clean: #4CC38A;
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: var(--step-0)/1.55 var(--text);
+}
+
+.page {
+  max-width: 54rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 4rem) clamp(1rem, 4vw, 2.5rem) 3rem;
+}
+
+h1, h2, legend, .figure strong, .tick, .examples button, .chip span {
+  font-family: var(--display);
+}
+
+/* ---------------------------------------------------------------- header */
+
+.masthead { margin-bottom: 2.5rem; }
+
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: var(--step-3);
+  font-weight: 700;
+  font-stretch: condensed;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.lede {
+  margin: 0;
+  max-width: 38rem;
+  color: var(--graphite);
+  font-size: var(--step-1);
+  line-height: 1.45;
+}
+
+h2 {
+  margin: 0;
+  font-size: var(--step-1);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- editor */
+
+.editor-head,
+.result-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.editor-head > label {
+  font-family: var(--display);
+  font-size: var(--step-1);
+  font-weight: 600;
+}
+
+.examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.9rem;
+  font-size: var(--step--1);
+}
+
+.examples-hint { color: var(--graphite); }
+
+.examples button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-size: var(--step--1);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+}
+
+.examples button:hover { text-decoration-color: var(--censor); }
+
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 7.5rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+  font: var(--step-1)/1.5 var(--text);
+  resize: vertical;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2.5rem;
+  margin-top: 1rem;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+legend {
+  margin-bottom: 0.35rem;
+  padding: 0;
+  color: var(--graphite);
+  font-size: var(--step--1);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.chip input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.chip span {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--graphite);
+  font-size: var(--step--1);
+  line-height: 1.4;
+}
+
+.chip small {
+  font-family: var(--text);
+  font-size: 0.75em;
+}
+
+.chip input:checked + span {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.char-input {
+  width: 3.2rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+  font: 600 var(--step-0) var(--text);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- result */
+
+.result,
+.timing { margin-top: 3rem; }
+
+.status {
+  margin: 0;
+  font-size: var(--step--1);
+  font-weight: 600;
+}
+
+.status[data-state="clean"] { color: var(--clean); }
+.status[data-state="profane"] { color: var(--censor); }
+
+.output {
+  min-height: 3.2rem;
+  margin: 0;
+  padding: 0.9rem 0 1rem;
+  border-top: 2px solid var(--ink);
+  font-size: var(--step-2);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.output:empty::before {
+  content: "O texto censurado aparece aqui.";
+  color: var(--graphite);
+  font-size: var(--step-1);
+}
+
+/* The memorable detail: censored words become red redaction bars. */
+.output mark {
+  padding: 0 0.12em;
+  border-radius: 2px;
+  background: var(--censor);
+  color: var(--censor-ink);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.error {
+  margin: 0.5rem 0 0;
+  color: var(--censor);
+  font-weight: 600;
+}
+
+.matches {
+  width: 100%;
+  margin-top: 0.5rem;
+  border-collapse: collapse;
+  font-size: var(--step--1);
+}
+
+.matches th {
+  padding: 0.4rem 0.75rem 0.4rem 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--graphite);
+  font-weight: 500;
+  text-align: left;
+}
+
+.matches td {
+  padding: 0.45rem 0.75rem 0.45rem 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.matches td:first-child { font-weight: 600; }
+
+/* ---------------------------------------------------------------- timing */
+
+.timing-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2.5rem;
+  margin: 0.75rem 0 2.75rem;
+}
+
+.figure { color: var(--graphite); }
+
+.figure strong {
+  display: block;
+  font-size: var(--step-3);
+  font-weight: 700;
+  font-stretch: condensed;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.figure-algo strong { color: var(--censor); }
+.figure-rtt strong { color: var(--ink); }
+
+/* Log scale, 1 ns to 1 s. Above the line: where this request landed.
+   Right below: the scale. Further below: familiar reference latencies. */
+.ruler {
+  position: relative;
+  padding: 1.6rem 0 7.4rem;
+}
+
+.ruler-track {
+  position: relative;
+  height: 2px;
+  background: var(--ink);
+}
+
+.ref,
+.marker,
+.tick {
+  position: absolute;
+  left: calc(var(--x) * 100%);
+}
+
+.ref-ram { --x: 0.222; }
+.ref-ssd { --x: 0.575; }
+.ref-dc { --x: 0.633; }
+.ref-blink { --x: 0.889; }
+
+.ref {
+  top: 0;
+  width: 1px;
+  height: 38px;
+  background: var(--rule);
+}
+
+.ref::after {
+  content: attr(data-label) "\A" attr(data-value);
+  position: absolute;
+  top: 40px;
+  left: 0;
+  transform: translateX(-50%);
+  color: var(--graphite);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  text-align: center;
+  white-space: pre;
+}
+
+/* SSD and datacenter are close on a log scale: drop one label a row. */
+.ref-dc { height: 70px; }
+.ref-dc::after { top: 72px; }
+
+.marker {
+  top: -9px;
+  width: 0;
+  height: 0;
+  border: 7px solid transparent;
+  border-bottom: 0;
+  transform: translate(-7px, -100%);
+  transition: left 180ms ease-out;
+}
+
+.marker[hidden] { display: none; }
+
+.marker-algo { border-top: 11px solid var(--censor); }
+.marker-rtt { border-top: 11px solid var(--ink); }
+
+.tick {
+  top: 8px;
+  transform: translateX(-50%);
+  color: var(--ink);
+  font-size: var(--step--1);
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.tick::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 2px;
+  height: 10px;
+  background: var(--ink);
+}
+
+.tick-ns::before { left: 0; }
+.tick-s::before { left: auto; right: 0; }
+
+.tick-ns { --x: 0; transform: none; }
+.tick-us { --x: 0.333; }
+.tick-ms { --x: 0.667; }
+.tick-s { --x: 1; transform: translateX(-100%); }
+
+.footnote {
+  max-width: 40rem;
+  margin: 0;
+  color: var(--graphite);
+  font-size: var(--step--1);
+}
+
+/* ---------------------------------------------------------------- raw JSON */
+
+.raw {
+  margin-top: 3rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1rem;
+}
+
+.raw summary {
+  font-family: var(--display);
+  font-size: var(--step-1);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.raw-request { margin: 0.75rem 0 0.25rem; color: var(--graphite); font-size: var(--step--1); }
+
+.raw pre {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--field);
+  overflow-x: auto;
+  font-size: var(--step--1);
+  line-height: 1.5;
+}
+
+code { font-family: var(--code); font-size: 0.92em; }
+
+.colophon {
+  margin-top: 3rem;
+  color: var(--graphite);
+  font-size: var(--step--1);
+}
+
+/* ---------------------------------------------------------------- utilities */
+
+.muted { color: var(--graphite); font-size: var(--step--1); }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 2px solid var(--censor);
+  outline-offset: 2px;
+}
+
+.chip input:focus-visible + span {
+  outline: 2px solid var(--censor);
+  outline-offset: 2px;
+}
+
+@media (max-width: 34rem) {
+  .output { font-size: var(--step-1); }
+  .ref::after { font-size: 0.68rem; }
+  .ref-ram::after { transform: none; text-align: left; }
+  .ref-blink::after { transform: translateX(-100%); text-align: right; }
+  .matches th:last-child,
+  .matches td:last-child { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marker { transition: none; }
+}

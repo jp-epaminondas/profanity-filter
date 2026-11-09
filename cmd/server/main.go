@@ -26,11 +26,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jp-epaminondas/language-filter/internal/api"
-	"github.com/jp-epaminondas/language-filter/internal/clock"
-	"github.com/jp-epaminondas/language-filter/internal/moderation"
-	"github.com/jp-epaminondas/language-filter/internal/wordlist"
-	"github.com/jp-epaminondas/language-filter/wordlists"
+	"github.com/jp-epaminondas/profanity-filter/internal/api"
+	"github.com/jp-epaminondas/profanity-filter/internal/clock"
+	"github.com/jp-epaminondas/profanity-filter/internal/moderation"
+	"github.com/jp-epaminondas/profanity-filter/internal/wordlist"
+	"github.com/jp-epaminondas/profanity-filter/wordlists"
 )
 
 func main() {

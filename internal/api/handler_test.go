@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jp-epaminondas/language-filter/internal/filter"
-	"github.com/jp-epaminondas/language-filter/internal/moderation"
-	"github.com/jp-epaminondas/language-filter/internal/wordlist"
+	"github.com/jp-epaminondas/profanity-filter/internal/filter"
+	"github.com/jp-epaminondas/profanity-filter/internal/moderation"
+	"github.com/jp-epaminondas/profanity-filter/internal/wordlist"
 )
 
 const testToken = "s3cret"

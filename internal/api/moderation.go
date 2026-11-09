@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/jp-epaminondas/language-filter/internal/moderation"
+	"github.com/jp-epaminondas/profanity-filter/internal/moderation"
 )
 
 // MaxReportBodyBytes limits POST /v1/reports.

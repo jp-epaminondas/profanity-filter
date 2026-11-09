@@ -30,9 +30,9 @@ import (
 	"sync"
 	"unicode"
 
-	"github.com/jp-epaminondas/language-filter/internal/normalizer"
-	"github.com/jp-epaminondas/language-filter/internal/trie"
-	"github.com/jp-epaminondas/language-filter/internal/wordlist"
+	"github.com/jp-epaminondas/profanity-filter/internal/normalizer"
+	"github.com/jp-epaminondas/profanity-filter/internal/trie"
+	"github.com/jp-epaminondas/profanity-filter/internal/wordlist"
 )
 
 // MaxLanguages is the number of languages a Filter can hold (one bit each).

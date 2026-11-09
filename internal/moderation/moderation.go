@@ -34,9 +34,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/jp-epaminondas/language-filter/internal/filter"
-	"github.com/jp-epaminondas/language-filter/internal/normalizer"
-	"github.com/jp-epaminondas/language-filter/internal/wordlist"
+	"github.com/jp-epaminondas/profanity-filter/internal/filter"
+	"github.com/jp-epaminondas/profanity-filter/internal/normalizer"
+	"github.com/jp-epaminondas/profanity-filter/internal/wordlist"
 )
 
 // Errors returned by Service. The API layer maps them to HTTP status codes.

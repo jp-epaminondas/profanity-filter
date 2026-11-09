@@ -1,6 +1,6 @@
 # Documentação
 
-Documentação técnica do **Language Filter**, com diagramas de como o sistema funciona por dentro. Para instalar e rodar, veja o [README principal](../README.md).
+Documentação técnica do **Profanity Filter**, com diagramas de como o sistema funciona por dentro. Para instalar e rodar, veja o [README principal](../README.md).
 
 Os diagramas usam [Mermaid](https://mermaid.js.org/), que o GitHub desenha automaticamente.
 

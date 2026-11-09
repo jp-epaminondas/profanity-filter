@@ -1,8 +1,8 @@
-# 🛡️ Language Filter — Filtro de Palavrões Multi-idioma em Microssegundos
+# 🛡️ Profanity Filter — Filtro de Palavrões Multi-idioma em Microssegundos
 
 ![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go&logoColor=white)
 ![Dependências](https://img.shields.io/badge/depend%C3%AAncias-0-brightgreen)
-![CI](https://github.com/jp-epaminondas/language-filter/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/jp-epaminondas/profanity-filter/actions/workflows/ci.yml/badge.svg)
 ![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue)
 
 API HTTP de filtro de palavrões (*profanity filter*) com foco em **português do Brasil** e suporte a **vários idiomas** (PT-BR e inglês incluídos). É escrita em Go puro, só com a biblioteca padrão.

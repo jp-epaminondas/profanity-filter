@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/jp-epaminondas/language-filter/internal/wordlist"
+	"github.com/jp-epaminondas/profanity-filter/internal/wordlist"
 )
 
 var base = []wordlist.Dictionary{

@@ -11,10 +11,10 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/jp-epaminondas/language-filter/internal/clock"
-	"github.com/jp-epaminondas/language-filter/internal/filter"
-	"github.com/jp-epaminondas/language-filter/internal/moderation"
-	"github.com/jp-epaminondas/language-filter/web"
+	"github.com/jp-epaminondas/profanity-filter/internal/clock"
+	"github.com/jp-epaminondas/profanity-filter/internal/filter"
+	"github.com/jp-epaminondas/profanity-filter/internal/moderation"
+	"github.com/jp-epaminondas/profanity-filter/web"
 )
 
 // Request limits. They bound the work a single request can cause, so one

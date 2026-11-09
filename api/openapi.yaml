@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Language Filter API
+  title: Profanity Filter API
   version: 1.0.0
   description: |
     Filtro de palavrões multi-idioma de baixa latência, com foco em português do Brasil.

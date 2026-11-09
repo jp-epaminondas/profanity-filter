@@ -1,3 +1,3 @@
-module github.com/jp-epaminondas/language-filter
+module github.com/jp-epaminondas/profanity-filter
 
 go 1.24

@@ -209,6 +209,12 @@ func TestAdd(t *testing.T) {
 		t.Errorf("after add: %q", got)
 	}
 
+	// "mané" sent as Latin-1 arrives as "man\uFFFD": it must not become "man".
+	res, _ = s.Add("pt-br", []string{"man\uFFFD"})
+	if len(res.Added) != 0 || len(res.Skipped) != 1 || !strings.Contains(res.Skipped[0].Reason, "UTF-8") {
+		t.Errorf("corrupted word = %+v", res)
+	}
+
 	if _, err := s.Add("klingon", []string{"x"}); !errors.Is(err, ErrUnknownLanguage) {
 		t.Errorf("unknown language: err = %v", err)
 	}

@@ -361,6 +361,10 @@ func (s *Service) Add(lang string, words []string) (AddResult, error) {
 		w := strings.TrimSpace(raw)
 		k := key{code, normalizer.String(w)}
 		switch {
+		case strings.ContainsRune(w, utf8.RuneError):
+			// Invalid UTF-8 (e.g. a terminal sending Latin-1) is decoded as
+			// U+FFFD. Dropping it silently would turn "mané" into "man".
+			res.Skipped = append(res.Skipped, Skipped{raw, "inválida: caracteres corrompidos (envie o corpo em UTF-8)"})
 		case k.word == "":
 			res.Skipped = append(res.Skipped, Skipped{raw, "inválida: vazia depois da normalização"})
 		case utf8.RuneCountInString(w) > MaxWordLen:

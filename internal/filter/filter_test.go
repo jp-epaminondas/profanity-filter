@@ -232,6 +232,8 @@ func TestEmbeddedWordlists(t *testing.T) {
 		"seu b0i0l4":           "seu ******",
 		"comprei água de coco": "comprei água de coco", // neutral words were dropped
 		"a vaca foi pro pasto": "a vaca foi pro pasto", // pt-br-strict is opt-in
+		"minha fita cassete":   "minha fita cassete",
+		"o Casseta & Planeta":  "o Casseta & Planeta",
 	} {
 		if got := f.Censor(in, defaults).Censored; got != want {
 			t.Errorf("Censor(%q) = %q, want %q", in, got, want)

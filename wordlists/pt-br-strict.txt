@@ -11,7 +11,8 @@
 # Deixadas de fora de propósito (nem aqui):
 #   - termos de identidade (gay, lésbica, homossexual): censurá-los pune
 #     justamente quem é alvo de ataque;
-#   - palavras neutras (coco, furo, defunto, ladrão, feio, moleque, doença...).
+#   - palavras neutras (coco, furo, defunto, ladrão, feio, moleque, doença,
+#     cassete...).
 
 # --- Insultos leves ---------------------------------------------------------
 baba-ovo
@@ -80,8 +81,10 @@ bagos
 boazuda
 bolagato
 bolcat
+buca
 bunda
 bunduda
+casseta
 chupada
 chupado
 clitoris

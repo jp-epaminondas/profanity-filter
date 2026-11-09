@@ -18,6 +18,13 @@ func TestString(t *testing.T) {
 		{"é", "e"}, // decomposed é (e + combining acute)
 		{"  muitos   espaços \t\n aqui  ", "muitos espacos aqui"},
 		{"", ""},
+		// homoglyphs: Cyrillic and Greek letters drawn like Latin ones
+		{"putа", "puta"},   // Cyrillic а
+		{"РОRRА", "porra"}, // Cyrillic Р, О, А
+		{"ΡΟRRΑ", "porra"}, // Greek Ρ, Ο, Α
+		{"mеrdа", "merda"}, // Cyrillic е, а
+		{"Νν", "nv"},       // Greek Ν looks like N; ν looks like v
+		{"тест", "тecт"},   // Cyrillic т stays (it does not look like t)
 	}
 	for _, tt := range tests {
 		if got := String(tt.in); got != tt.want {

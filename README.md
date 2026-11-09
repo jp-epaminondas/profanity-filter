@@ -6,7 +6,7 @@
 ![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue)
 
 API HTTP de filtro de palavrões (*profanity filter*) com foco em **português do Brasil** e suporte a **vários idiomas** (PT-BR e inglês incluídos). É escrita em Go puro, só com a biblioteca padrão.
-A detecção roda em uma **Árvore Trie em memória**, sobre o texto **normalizado**: caixa baixa, sem acentos, com leetspeak convertido e separadores removidos. Cada requisição escolhe os idiomas que quer filtrar, e o texto é varrido **uma única vez**, seja qual for a combinação.
+A detecção roda em uma **Árvore Trie em memória**, sobre o texto **normalizado**: caixa baixa, sem acentos, com leetspeak convertido, separadores removidos e letras gêmeas de outros alfabetos trocadas pelas latinas (o `а` russo de `putа` vira `a`). Cada requisição escolhe os idiomas que quer filtrar, e o texto é varrido **uma única vez**, seja qual for a combinação.
 
 | Cenário (benchmark, CPU i7-13620H, mediana de 5 execuções) | Tempo por texto | Alocações |
 |---|---:|---:|

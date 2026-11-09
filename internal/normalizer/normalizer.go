@@ -74,6 +74,8 @@ func (b *Buffer) push(r rune, start, end int, softBreak bool) {
 // Rules, applied rune by rune in a single O(n) pass:
 //  1. Leetspeak symbols are mapped to letters (0->o, 4->a, 3->e, 1->i, @->a ...).
 //  2. Letters are lowercased and stripped of diacritics (Ç->c, Ã->a ...).
+//     Cyrillic and Greek homoglyphs fold into the Latin letter they imitate
+//     (Cyrillic а->a, Greek Ρ->p ...: see homoglyphUpper and homoglyphLower).
 //  3. Runs of whitespace collapse into a single ' ' (hard word boundary).
 //  4. Every other symbol/punctuation is removed, leaving a soft boundary.
 //  5. Combining marks (decomposed accents) are dropped without a trace.
@@ -215,14 +217,51 @@ func classify(r rune) (rune, kind) {
 		return e.r, e.k
 	}
 	// Slow path for everything outside Latin: still correct, just not tabled.
+	if l, ok := homoglyphUpper[r]; ok {
+		return l, kindLetter
+	}
 	switch {
 	case unicode.Is(unicode.Mn, r):
 		return 0, kindDrop
 	case unicode.IsLetter(r) || unicode.IsDigit(r):
-		return unicode.ToLower(r), kindLetter
+		lower := unicode.ToLower(r)
+		if l, ok := homoglyphLower[lower]; ok {
+			return l, kindLetter
+		}
+		return lower, kindLetter
 	case unicode.IsSpace(r):
 		return ' ', kindSpace
 	default:
 		return 0, kindSeparator
 	}
+}
+
+// Homoglyphs: Cyrillic and Greek letters drawn exactly like Latin ones. Without
+// this, "putа" written with a Cyrillic "а" (U+0430) slips past the filter while
+// looking identical on screen. Each one folds into the Latin letter it imitates
+// (in the spirit of the Unicode confusables, UTS #39).
+//
+// The uppercase table is checked first, because case folding loses the shape:
+// Greek "Ν" is drawn as Latin "N", but its lowercase "ν" is drawn as "v". Only
+// the lowercase forms that also look Latin go in the second table (Cyrillic "т"
+// does not look like "t", but "Т" looks like "T").
+//
+// The same normalization runs over the word lists, so a future dictionary in
+// Russian or Greek still matches: both sides are folded the same way.
+var homoglyphUpper = map[rune]rune{
+	// Cyrillic
+	'А': 'a', 'В': 'b', 'Е': 'e', 'К': 'k', 'М': 'm', 'Н': 'h', 'О': 'o', 'Р': 'p',
+	'С': 'c', 'Т': 't', 'У': 'y', 'Х': 'x', 'Ѕ': 's', 'І': 'i', 'Ј': 'j',
+	// Greek
+	'Α': 'a', 'Β': 'b', 'Ε': 'e', 'Ζ': 'z', 'Η': 'h', 'Ι': 'i', 'Κ': 'k', 'Μ': 'm',
+	'Ν': 'n', 'Ο': 'o', 'Ρ': 'p', 'Τ': 't', 'Υ': 'y', 'Χ': 'x',
+}
+
+var homoglyphLower = map[rune]rune{
+	// Cyrillic
+	'а': 'a', 'е': 'e', 'ё': 'e', 'о': 'o', 'р': 'p', 'с': 'c', 'у': 'y', 'х': 'x',
+	'ѕ': 's', 'і': 'i', 'ї': 'i', 'ј': 'j', 'ԁ': 'd', 'ԛ': 'q', 'ԝ': 'w', 'ӏ': 'l', 'к': 'k',
+	// Greek
+	'α': 'a', 'ο': 'o', 'ρ': 'p', 'ν': 'v', 'ι': 'i', 'κ': 'k', 'υ': 'u', 'χ': 'x',
+	'ε': 'e', 'γ': 'y', 'ω': 'w',
 }

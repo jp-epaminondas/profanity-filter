@@ -1,0 +1,112 @@
+# English (en)
+#
+# One word or expression per line. Lines starting with '#' are comments.
+# Casing does not matter, and variations such as "sh1t", "f.u.c.k" and
+# "fuuuck" are already handled by the engine. Inflections (plurals, -ing,
+# -ed) MUST be listed: matching is whole-word, so "class" and "assassin"
+# are never flagged for "ass".
+#
+# Left out on purpose because they are ambiguous (false positives):
+#   cock, prick, hell, damn, crap, bloody, screw, balls, hoe, beaver
+
+# --- Profanity --------------------------------------------------------------
+ass
+asses
+asshat
+asshole
+assholes
+bastard
+bastards
+bitch
+bitches
+bitching
+bitchy
+blowjob
+blowjobs
+bollocks
+bullshit
+cocksucker
+cocksuckers
+cunt
+cunts
+dick
+dickhead
+dickheads
+dicks
+dipshit
+douche
+douchebag
+douchebags
+dumbass
+fuck
+fucked
+fucker
+fuckers
+fuckface
+fuckhead
+fuckin
+fucking
+fucks
+horseshit
+jackass
+jerkoff
+motherfucker
+motherfuckers
+motherfucking
+piss
+pissed
+pissing
+pussies
+pussy
+shit
+shithead
+shitheads
+shits
+shitting
+shitty
+slut
+sluts
+slutty
+smartass
+twat
+twats
+wanker
+wankers
+whore
+whores
+
+# --- Expressions -------------------------------------------------------------
+fuck off
+fuck you
+holy shit
+piece of shit
+son of a bitch
+sons of bitches
+
+# --- Abbreviations -----------------------------------------------------------
+fml
+gtfo
+mf
+stfu
+wtf
+
+# --- Slurs -------------------------------------------------------------------
+chink
+chinks
+fag
+faggot
+faggots
+fags
+kike
+kikes
+nigga
+niggas
+nigger
+niggers
+retard
+retarded
+retards
+spic
+spics
+trannies
+tranny

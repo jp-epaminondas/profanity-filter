@@ -1,0 +1,125 @@
+# Português do Brasil, modo ESTRITO (pt-br-strict)
+#
+# Dicionário OPCIONAL: nunca entra no padrão do servidor. Só é aplicado quando
+# a requisição pede explicitamente, ex.: "languages": ["pt-br", "pt-br-strict"],
+# ou quando ele aparece em DEFAULT_LANGUAGES.
+#
+# Contém insultos leves e palavras de duplo sentido, que têm um significado
+# inocente comum (vaca, cachorro, rolinha, peru, rabo, pau...). Faz sentido em
+# plataformas infantis; num chat adulto gera falsos positivos demais.
+#
+# Deixadas de fora de propósito (nem aqui):
+#   - termos de identidade (gay, lésbica, homossexual): censurá-los pune
+#     justamente quem é alvo de ataque;
+#   - palavras neutras (coco, furo, defunto, ladrão, feio, moleque, doença...).
+
+# --- Insultos leves ---------------------------------------------------------
+baba-ovo
+babaovo
+bebum
+besta
+bisca
+boco
+burra
+burro
+cachorra
+cachorro
+cadela
+canalha
+chifruda
+chifrudo
+debil
+debiloide
+egua
+esporro
+estupida
+estupidez
+estupido
+fedida
+fedido
+fedorenta
+idiota
+idiotice
+macaca
+macaco
+machona
+manguaca
+mocrea
+mocreia
+mondronga
+mondrongo
+nojenta
+nojento
+paspalha
+paspalhao
+paspalho
+pentelha
+pentelho
+pilantra
+piranha
+puxa-saco
+puxasaco
+sacana
+safada
+safado
+tarada
+tarado
+tezao
+tezuda
+tezudo
+trocha
+troucha
+trouxa
+troxa
+vaca
+
+# --- Duplo sentido e termos anatômicos --------------------------------------
+anus
+bacura
+bagos
+boazuda
+bolagato
+bolcat
+bunda
+bunduda
+chupada
+chupado
+clitoris
+felacao
+fornica
+furnica
+furnicar
+masturba
+mija
+mijada
+mijado
+mijo
+nadega
+pau
+peido
+pemba
+penis
+perereca
+peru
+pica
+picao
+prostibulo
+prostituta
+prostituto
+rabao
+rabo
+rabuda
+rabudao
+rabudo
+rabudona
+racha
+rachada
+rachadao
+rola
+rolinha
+rosca
+trolha
+vagina
+veada
+veado
+xana

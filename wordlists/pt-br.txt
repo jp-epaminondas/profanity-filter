@@ -1,0 +1,210 @@
+# Português do Brasil (pt-br)
+#
+# Uma palavra ou expressão por linha. Linhas com '#' são comentários.
+# Maiúsculas e acentos não importam (tudo é normalizado), e variações como
+# "m3rd4", "m.e.r.d.a" e "merdaaa" já são cobertas pelo motor.
+# Flexões (plural, feminino, conjugações) PRECISAM ser listadas: a busca é
+# por palavra inteira, para não censurar "computador" ou "cacetete".
+#
+# Insultos leves e palavras de duplo sentido (pau, rola, vaca, piranha,
+# veado, macaco, bunda...) ficam em pt-br-strict.txt, um dicionário opcional
+# que não entra no padrão. Fora das duas listas, por gerarem falso positivo
+# demais: pinto, saco, galinha, chupa, desgraça.
+
+# --- Palavrões ---------------------------------------------------------------
+boceta
+bocetas
+boquete
+boquetes
+bosta
+bostas
+bostinha
+broxa
+buceta
+bucetas
+cacete
+cacetes
+cagada
+cagado
+cagando
+cagar
+cagou
+caralhada
+caralho
+caralhos
+crl
+cu
+cus
+cuzao
+cuzinho
+cuzoes
+foda
+foda-se
+fodam
+fodao
+fodas
+fodase
+fode
+fodem
+fodendo
+foder
+fodeu
+fodi
+fodia
+fodida
+fodidas
+fodido
+fodidos
+fodona
+krl
+merda
+merdas
+merdinha
+merdinhas
+piroca
+pirocas
+porra
+porrada
+porras
+punheta
+punhetas
+punheteiro
+puta
+putaria
+putarias
+putas
+puteiro
+puteiros
+putinha
+putinhas
+puto
+putos
+siririca
+xereca
+xota
+xoxota
+xoxotas
+
+# --- Expressões -------------------------------------------------------------
+filha da puta
+filhas da puta
+filho da puta
+filhos da puta
+pau no cu
+puta merda
+puta que pariu
+tomar no cu
+vai se foder
+vai tomar no cu
+
+# --- Abreviações -------------------------------------------------------------
+fdp
+pqp
+tmnc
+tnc
+vsf
+vtnc
+
+# --- Insultos ----------------------------------------------------------------
+arrombada
+arrombadas
+arrombado
+arrombados
+babaca
+babacas
+corna
+corno
+cornos
+cornudo
+cretina
+cretino
+cretinos
+desgraçada
+desgraçadas
+desgraçado
+desgraçados
+escrota
+escrotas
+escroto
+escrotos
+imbecil
+imbecis
+otária
+otárias
+otário
+otários
+retardada
+retardado
+retardados
+vadia
+vadias
+vagabunda
+vagabundas
+vagabundo
+vagabundos
+
+# --- Ofensas discriminatórias -------------------------------------------------
+bicha
+bichas
+crioula
+crioulo
+sapatão
+sapatona
+traveco
+travecos
+viado
+viados
+
+# --- Gírias vulgares e grafias alternativas ---------------------------------
+bosseta
+bostana
+brioco
+bronha
+buca
+busseta
+caga
+cagao
+cagona
+casseta
+cassete
+checheca
+chereca
+chibumba
+chibumbo
+chochota
+chota
+cornuda
+culhao
+culhoes
+curalho
+cuzuda
+cuzudo
+esporrada
+esporrado
+fudecao
+fudendo
+fudida
+fudido
+grelinho
+grelo
+iscrota
+iscroto
+olhota
+piroco
+piru
+punhetao
+xavasca
+xerereca
+xexeca
+xibiu
+xibumba
+xochota
+
+# --- Ofensas discriminatórias (variações) -----------------------------------
+baitola
+bixa
+boiola
+machorra
+veadao
+viada
+viadao

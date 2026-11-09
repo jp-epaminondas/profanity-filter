@@ -247,11 +247,11 @@ func (f *Filter) scan(buf *normalizer.Buffer, langs LangSet) []Match {
 			i++
 			continue
 		}
-		if end, found := f.longestMatch(buf, i, langs); end > i {
+		if end, found, word := f.longestMatch(buf, i, langs); end > i {
 			matches = append(matches, Match{
 				Start: buf.Spans[i].Start,
 				End:   buf.Spans[end-1].End,
-				Word:  f.dictionaryWord(buf, i, end),
+				Word:  word,
 				Langs: found,
 			})
 			i = end
@@ -264,7 +264,7 @@ func (f *Filter) scan(buf *normalizer.Buffer, langs LangSet) []Match {
 
 // longestMatch returns the end (exclusive) of the longest word of the
 // requested languages starting at normalized position start, or -1 if there
-// is none, together with the languages that word belongs to.
+// is none, together with the languages and the dictionary form of that word.
 //
 // Language filtering costs a single AND per terminal node: a word that only
 // exists in an unselected language is simply not a terminal for this request.
@@ -275,9 +275,9 @@ func (f *Filter) scan(buf *normalizer.Buffer, langs LangSet) []Match {
 // The walk is also tolerant to stretched letters: when a rune has no edge in
 // the Trie but repeats the previous one, the cursor stays where it is. That
 // turns "merdaaaa" and "porrrra" into hits without storing every variation.
-func (f *Filter) longestMatch(buf *normalizer.Buffer, start int, langs LangSet) (int, LangSet) {
+func (f *Filter) longestMatch(buf *normalizer.Buffer, start int, langs LangSet) (int, LangSet, string) {
 	cur := f.trie.Root()
-	best, bestLangs := -1, LangSet(0)
+	best, bestLangs, bestWord := -1, LangSet(0), ""
 	prev := rune(-1)
 
 	for j := start; j < buf.Len(); j++ {
@@ -289,26 +289,10 @@ func (f *Filter) longestMatch(buf *normalizer.Buffer, start int, langs LangSet) 
 		}
 		prev = r
 		if found := cur.Tags() & langs; found != 0 && buf.IsBoundary(j+1) {
-			best, bestLangs = j+1, found
+			best, bestLangs, bestWord = j+1, found, cur.Word()
 		}
 	}
-	return best, bestLangs
-}
-
-// dictionaryWord rebuilds the dictionary word behind a match by walking the
-// Trie again with the same rules as longestMatch: a rune with an edge is
-// part of the word, a stretched repetition is not. It only runs on hits, so
-// clean text pays nothing for it.
-func (f *Filter) dictionaryWord(buf *normalizer.Buffer, start, end int) string {
-	cur := f.trie.Root()
-	word := make([]rune, 0, end-start)
-	for _, r := range buf.Runes[start:end] {
-		if next, ok := cur.Next(r); ok {
-			cur = next
-			word = append(word, r)
-		}
-	}
-	return string(word)
+	return best, bestLangs, bestWord
 }
 
 // mask builds the censored copy of text. Matches are sorted and disjoint,

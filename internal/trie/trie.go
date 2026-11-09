@@ -31,6 +31,7 @@ type node struct {
 	children [alphabet]*node
 	extra    map[rune]*node // children outside the fast alphabet, rarely used
 	tags     Tags           // non-zero when a dictionary word ends here
+	word     string         // the word ending here, stored once at insert time
 }
 
 // index maps a rune to its slot in node.children, or -1 if it has none.
@@ -101,6 +102,7 @@ func (t *Trie) Insert(word []rune, tags Tags) bool {
 	}
 	if cur.tags == 0 {
 		t.words++
+		cur.word = string(word)
 	}
 	cur.tags |= tags
 	return true
@@ -145,3 +147,7 @@ func (c Cursor) Next(r rune) (Cursor, bool) {
 
 // Tags returns the tags of the word ending at this position (0 if none).
 func (c Cursor) Tags() Tags { return c.n.tags }
+
+// Word returns the word ending at this position ("" if none). The string
+// was built at insert time, so reading it during a scan never allocates.
+func (c Cursor) Word() string { return c.n.word }

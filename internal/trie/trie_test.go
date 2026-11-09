@@ -86,4 +86,7 @@ func TestCursor(t *testing.T) {
 	if c.Tags() != tagB {
 		t.Errorf("Tags() = %b, want %b", c.Tags(), tagB)
 	}
+	if c.Word() != "foda" {
+		t.Errorf("Word() = %q, want %q", c.Word(), "foda")
+	}
 }
